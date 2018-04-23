@@ -48,23 +48,19 @@ SwapHeader (NoffHeader *noffH)
 }
 
 void
-AddrSpace::MapVPN2PPN() {
+AddrSpace::MapVPN2PPN(int virtAddr) {
     unsigned int numPages = getNumPages();
     DEBUG('a', "Initializing address space, num pages %d\n", 
 					numPages);
     memLock->Acquire();
-    pageTable = new TranslationEntry[numPages];
-    pageIndex = numPages;
-    for (int i = 0; i < numPages; i++) 
-    {
-	pageTable[i].virtualPage = i;
-	pageTable[i].physicalPage = mans_man->allocate();
-	pageTable[i].valid = true;
-	pageTable[i].use = false;
-	pageTable[i].dirty = false;
-	pageTable[i].readOnly = false; 
-    	bzero(machine->mainMemory + (pageTable[i].physicalPage * 128), PageSize);
-    }
+    pageTable[virtAddr].virtualPage = virtAddr;
+    pageTable[virtAddr].physicalPage = mans_man->allocate();
+    pageTable[virtAddr].valid = true;
+    pageTable[virtAddr].use = false;
+    pageTable[virtAddr].dirty = false;
+    pageTable[virtAddr].readOnly = false;
+    pageTable[virtAddr].isInMem = true;
+    memLock->Release();
 }
 
 //----------------------------------------------------------------------
@@ -139,6 +135,16 @@ AddrSpace::AddrSpace(OpenFile *executable)
 
     memLock->Acquire();
 
+    DEBUG('a', "Initializing address space, num pages %d\n", 
+					numPages);
+    pageTable = new TranslationEntry[numPages];
+    pageIndex = numPages;
+    for (int i = 0; i < numPages; i++) 
+    {
+	pageTable[i].isInMem = false;
+    	bzero(machine->mainMemory + (pageTable[i].physicalPage * 128), PageSize);
+    }
+    
     // Copy the code section into memory
     counter = 0;
     if (noffH.code.size > 0) 

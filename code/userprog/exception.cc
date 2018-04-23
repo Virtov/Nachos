@@ -129,7 +129,7 @@ void handlePageFaultException() {
 
     int badVirtualAddr = machine->ReadRegister(BadVAddrReg);
     pagingLock->Acquire();
-    //page fault
+    currentThread->space->MapVPN2PPN(badVirtualAddr/PageSize);
     pagingLock->Release();
 }
 
