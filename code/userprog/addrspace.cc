@@ -49,9 +49,9 @@ SwapHeader (NoffHeader *noffH)
 
 void
 AddrSpace::MapVPN2PPN() {
-    unisgned int numPages = getNumPages();
-    DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
-					numPages, numPages*PAGESIZE);
+    unsigned int numPages = getNumPages();
+    DEBUG('a', "Initializing address space, num pages %d\n", 
+					numPages);
     memLock->Acquire();
     pageTable = new TranslationEntry[numPages];
     pageIndex = numPages;
