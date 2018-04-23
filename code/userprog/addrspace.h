@@ -53,7 +53,10 @@ class AddrSpace {
     void getString(char * str, int virtAd);
     void execThread(OpenFile * executable);
     unsigned int myTranslate(int virtAddr);
-	unsigned int numOfPages();
+    unsigned int numOfPages();
+    void MapVPN2PPN(int);
+    
+    char* name; //name of address space
 
   private:
     bool worked;

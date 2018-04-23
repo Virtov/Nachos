@@ -57,9 +57,8 @@ void helpFork(int i);
 int syscallKill();
 void syscallHalt();
 int syscallExec();
+void handlePageFaultException();
 
-
-#if defined(CHANGED)
 void
 ExceptionHandler(ExceptionType which)
 {
@@ -104,26 +103,10 @@ ExceptionHandler(ExceptionType which)
 	syscallKill();
 	updateCounter();
     }
-	else if (which == PageFaultException) {
-		DEBUG('a', "Page Fault Exception.\n");
-		//machine->FIFO(); //This is what we need when the exception is called.
-	}
-    else 
-    {
-	printf("Unexpected user mode exception %d %d\n", which, type);
-	ASSERT(FALSE);
-    }
-}
-#else
-void
-ExceptionHandler(ExceptionType which)
-{
-    int type = machine->ReadRegister(2);
-
-    if ((which == SyscallException) && (type == SC_Halt)) 
-    {
-	DEBUG('a', "Shutdown, initiated by user program.\n");
-   	interrupt->Halt();
+    else if (which == PageFaultException) {
+            DEBUG('a', "Page Fault Exception.\n");
+            handlePageFaultException();
+            //machine->FIFO(); //This is what we need when the exception is called.
     }
     else 
     {
@@ -131,9 +114,25 @@ ExceptionHandler(ExceptionType which)
 	ASSERT(FALSE);
     }
 }
-#endif
 
-#if defined(CHANGED)
+#include "../machine/machine.h"
+
+extern Machine* machine;
+Lock* pagingLock;
+
+//#if defined(CHANGED)
+
+void handlePageFaultException() {
+    if (pagingLock == NULL) {
+        pagingLock = new Lock("pageingLock");
+    }
+
+    int badVirtualAddr = machine->ReadRegister(BadVAddrReg);
+    pagingLock->Acquire();
+    currentThread->space->pageFault(vpn);
+    pagingLock->Release();
+}
+
 void updateCounter()
 {
     int counter;
@@ -395,6 +394,3 @@ int syscallFork()
     memLock->Release();
     return tempAd->getPID();
 }
-
-
-#endif
