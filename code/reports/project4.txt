@@ -14,5 +14,5 @@ gets called always from exception.cc (where all the sys call handlers are).
 	We were not able to get the entire implementation working due to time constraint, so it does not fully 
 work as intended. However we believe that our logic was going in the right direction. 
 	A general gist of how we believed the process should go was:
-	Open Program->Memory allocation->Go into virtual memory->if pagefault->machine.cc FIFO->handle
+	Open Program->Heap Memory allocation->Go into virtual memory during execution->if pagefault->machine.cc FIFO->handle
 		memory error.
